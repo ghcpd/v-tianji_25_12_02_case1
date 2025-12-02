@@ -123,6 +123,20 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
 
   return (
     <div className="shopping-cart" data-testid="shopping-cart">
+      {/* Render available products so tests and parent components can add items */}
+      {products && products.length > 0 && (
+        <div className="product-list" data-testid="product-list">
+          {products.map(p => (
+            <div key={p.id} className="product" data-testid={`product-${p.id}`}>
+              <span className="product-name">{p.name}</span>
+              <span className="product-price">{formatCurrency(p.price, currency)}</span>
+              <button onClick={() => addToCart(p)} aria-label={`Add ${p.name}`}>
+                Add
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
       <h2>Shopping Cart ({getItemCount()} items)</h2>
 
       {cartItems.length === 0 ? (

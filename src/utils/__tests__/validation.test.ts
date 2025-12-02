@@ -1,4 +1,4 @@
-import { validateEmail, validatePhone, validatePassword, validateCreditCard, validatePostalCode } from '../validation';
+import { validateEmail, validatePhone, validatePassword, validateCreditCard, validatePostalCode, validateUrl, sanitizeInput } from '../validation';
 
 describe('validateEmail', () => {
   it('should return true for valid email addresses', () => {
@@ -72,6 +72,17 @@ describe('validatePostalCode', () => {
     expect(validatePostalCode('12345', 'US')).toBe(true);
     expect(validatePostalCode('12345-6789', 'US')).toBe(true);
     expect(validatePostalCode('1234', 'US')).toBe(false);
+  });
+
+  it('should validate URLs correctly', () => {
+    expect(validateUrl('https://example.com')).toBe(true);
+    expect(validateUrl('ftp://example.com')).toBe(true);
+    expect(validateUrl('not-a-url')).toBe(false);
+  });
+
+  it('should sanitize input by trimming and removing angle brackets', () => {
+    expect(sanitizeInput('  <script>hello</script>  ')).toBe('scripthello/script');
+    expect(sanitizeInput('<b>bold</b>')).toBe('bbold/b');
   });
 
   it('should validate UK postal codes', () => {
