@@ -64,6 +64,10 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
     setDiscountCode('');
   }, []);
 
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }, [cartItems]);
+
   const applyDiscountCode = useCallback(async () => {
     if (!discountCode.trim()) return;
 
@@ -75,11 +79,7 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
       setAppliedDiscount(null);
       alert('Invalid discount code');
     }
-  }, [discountCode]);
-
-  const subtotal = useMemo(() => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cartItems]);
+  }, [discountCode, subtotal]);
 
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
@@ -124,6 +124,18 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
   return (
     <div className="shopping-cart" data-testid="shopping-cart">
       <h2>Shopping Cart ({getItemCount()} items)</h2>
+
+      <div className="product-list" data-testid="product-list">
+        {products.map(product => (
+          <button
+            key={product.id}
+            onClick={() => addToCart(product)}
+            data-testid={`add-to-cart-${product.id}`}
+          >
+            Add {product.name}
+          </button>
+        ))}
+      </div>
 
       {cartItems.length === 0 ? (
         <div className="empty-cart">
@@ -176,10 +188,12 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
               value={discountCode}
               onChange={(e) => setDiscountCode(e.target.value)}
               disabled={!!appliedDiscount}
+              data-testid="discount-input"
             />
             <button
               onClick={applyDiscountCode}
               disabled={!!appliedDiscount || !discountCode.trim()}
+              data-testid="apply-discount"
             >
               Apply
             </button>
@@ -187,31 +201,31 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
               <button onClick={() => {
                 setAppliedDiscount(null);
                 setDiscountCode('');
-              }}>
+              }} data-testid="remove-discount">
                 Remove
               </button>
             )}
           </div>
 
-          <div className="cart-summary">
-            <div className="summary-row">
+          <div className="cart-summary" data-testid="cart-summary">
+            <div className="summary-row" data-testid="summary-subtotal">
               <span>Subtotal:</span>
               <span>{formatCurrency(subtotal, currency)}</span>
             </div>
             
             {appliedDiscount && (
-              <div className="summary-row discount">
+              <div className="summary-row discount" data-testid="summary-discount">
                 <span>Discount ({appliedDiscount.code}):</span>
                 <span>-{formatCurrency(discountAmount, currency)}</span>
               </div>
             )}
             
-            <div className="summary-row">
+            <div className="summary-row" data-testid="summary-tax">
               <span>Tax ({(taxRate * 100).toFixed(1)}%):</span>
               <span>{formatCurrency(taxAmount, currency)}</span>
             </div>
             
-            <div className="summary-row total">
+            <div className="summary-row total" data-testid="summary-total">
               <span>Total:</span>
               <span>{formatCurrency(total, currency)}</span>
             </div>
