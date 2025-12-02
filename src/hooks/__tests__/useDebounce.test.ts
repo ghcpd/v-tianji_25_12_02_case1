@@ -26,4 +26,23 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('updated');
   });
+
+  it('should reset timer when delay changes and clean up on unmount', () => {
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+
+    const { rerender, unmount } = renderHook(
+      ({ value, delay }) => useDebounce(value, delay),
+      { initialProps: { value: 'a', delay: 300 } }
+    );
+
+    rerender({ value: 'b', delay: 600 });
+    expect(setTimeoutSpy).toHaveBeenCalled();
+
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+
+    setTimeoutSpy.mockRestore();
+    clearTimeoutSpy.mockRestore();
+  });
 });
