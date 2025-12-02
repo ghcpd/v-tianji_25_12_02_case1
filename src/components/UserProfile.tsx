@@ -33,7 +33,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<User>>({ email: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const debouncedEmail = useDebounce(formData.email || '', 500);
