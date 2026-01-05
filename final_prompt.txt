@@ -1,2 +1,50 @@
 Title:
 Improve and Complete Test Coverage for the Entire Codebase
+
+Description:
+This task requires a comprehensive enhancement of the project's test suite. The system must analyze existing implementation and test files, identify all gaps in test coverage, add fully runnable and correct tests, and ensure the entire suite passes reliably. The final output must include updated tests and a summary of added coverage improvements.
+
+Prompt:
+Your goal is to significantly improve the overall test coverage by:
+
+Identifying any untested or partially tested logic
+
+Adding all missing tests
+
+Ensuring all new and existing tests are accurate, runnable, and fully pass without errors
+
+Preserving existing test behavior
+
+Not modifying production code unless absolutely necessary for test correctness
+
+Requirements:
+
+Analyze all implementation files to fully understand every execution path, branch, and behavior.
+
+Analyze all test files to determine what is currently covered.
+
+Produce new or updated test files that:
+
+Cover all missing logic paths and behaviors
+
+Include valid setups, mocks, data fixtures, and assertions
+
+Correctly handle asynchronous code and timing-sensitive behavior
+
+Integrate smoothly with the existing test environment
+
+Run successfully from start to finish under the project's test configuration
+
+All generated tests must be fully runnable with no syntax errors, import errors, mock conflicts, or inconsistent expectations.
+
+If existing tests contain incorrect assumptions, flaky behaviors, or invalid mocks, revise them so the full test suite passes reliably.
+
+Do not delete or weaken existing meaningful tests; only add or strengthen tests to increase completeness and reliability.
+
+After generating the complete test output, provide a final summary including:
+
+A list of all new tests added
+
+Which previously uncovered logic paths are now fully covered
+
+The estimated test coverage after improvements
