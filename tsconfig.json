@@ -5,6 +5,7 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "types": ["jest", "@testing-library/jest-dom"],
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,

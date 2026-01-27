@@ -77,4 +77,32 @@ describe('UserProfile', () => {
       expect(screen.getByText(/Invalid email format/i)).toBeInTheDocument();
     });
   });
+
+  it('should submit updated profile and call onUpdate', async () => {
+    (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
+    (api.updateUserProfile as jest.Mock).mockResolvedValue({ ...mockUser, name: 'Jane' });
+
+    const onUpdate = jest.fn();
+    render(<UserProfile userId="1" onUpdate={onUpdate} />);
+
+    await waitFor(() => expect(screen.getByText('John Doe')).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Edit Profile/i));
+
+    const nameInput = screen.getByLabelText(/Name/i);
+    fireEvent.change(nameInput, { target: { value: 'Jane' } });
+
+    fireEvent.click(screen.getByText(/Save/i));
+
+    await waitFor(() => expect(onUpdate).toHaveBeenCalled());
+    expect(screen.queryByText(/Edit Profile/i)).toBeInTheDocument();
+  });
+
+  it('should respect readonly mode and prevent role changes', async () => {
+    (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
+    render(<UserProfile userId="1" readonly={true} />);
+
+    await waitFor(() => expect(screen.getByText('John Doe')).toBeInTheDocument());
+    // Edit button is not visible when readonly
+    expect(screen.queryByText(/Edit Profile/i)).not.toBeInTheDocument();
+  });
 });

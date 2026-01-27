@@ -1,4 +1,17 @@
-import { deepClone, groupBy, chunk, unique, sortBy, randomId } from '../helpers';
+import {
+  deepClone,
+  groupBy,
+  chunk,
+  unique,
+  sortBy,
+  randomId,
+  debounce,
+  throttle,
+  sleep,
+  retry,
+} from '../helpers';
+
+jest.useFakeTimers();
 
 describe('deepClone', () => {
   it('should clone primitive values', () => {
@@ -20,6 +33,13 @@ describe('deepClone', () => {
     expect(cloned).toEqual(obj);
     expect(cloned).not.toBe(obj);
     expect(cloned.b).not.toBe(obj.b);
+  });
+
+  it('should clone Date objects', () => {
+    const date = new Date('2020-01-01T00:00:00Z');
+    const cloned = deepClone(date);
+    expect(cloned).toEqual(date);
+    expect(cloned).not.toBe(date);
   });
 });
 
@@ -64,5 +84,80 @@ describe('randomId', () => {
   it('should generate id of specified length', () => {
     const id = randomId(10);
     expect(id).toHaveLength(10);
+  });
+});
+
+describe('debounce', () => {
+  it('should call function after delay and cancel previous', () => {
+    const fn = jest.fn();
+    const debounced = debounce(fn, 1000);
+
+    debounced('a');
+    debounced('b');
+
+    // not called immediately
+    expect(fn).not.toBeCalled();
+
+    jest.advanceTimersByTime(1000);
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith('b');
+  });
+});
+
+describe('throttle', () => {
+  it('should call function at most once per limit', () => {
+    const fn = jest.fn();
+    const throttled = throttle(fn, 1000);
+
+    throttled(1);
+    throttled(2);
+    throttled(3);
+
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith(1);
+
+    jest.advanceTimersByTime(1000);
+    throttled(4);
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenCalledWith(4);
+  });
+});
+
+describe('sleep', () => {
+  it('should resolve after given ms', async () => {
+    const p = sleep(500);
+    jest.advanceTimersByTime(500);
+    await expect(p).resolves.toBeUndefined();
+  });
+});
+
+describe('retry', () => {
+  it('should retry until success', async () => {
+    // use real timers for this test because retry uses async sleeps
+    jest.useRealTimers();
+    let attempts = 0;
+    const fn = jest.fn().mockImplementation(async () => {
+      attempts++;
+      if (attempts < 3) throw new Error('failed');
+      return 'ok';
+    });
+
+    const resultPromise = retry(fn, 5, 10);
+
+    // wait for the retries to resolve (using real timers)
+    await expect(resultPromise).resolves.toBe('ok');
+    jest.useFakeTimers();
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('should throw after max attempts', async () => {
+    // use real timers to allow the retry sleep to run
+    jest.useRealTimers();
+    const fn = jest.fn().mockRejectedValue(new Error('broken'));
+    const p = retry(fn, 2, 5);
+
+    await expect(p).rejects.toThrow('broken');
+    jest.useFakeTimers();
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });

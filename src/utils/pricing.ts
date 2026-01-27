@@ -85,8 +85,13 @@ export const calculateInstallmentPayment = (
   annualRate: number,
   months: number
 ): number => {
-  if (months === 0 || annualRate === 0) {
-    return principal / months;
+  if (months === 0) {
+    throw new Error('Months must be greater than zero');
+  }
+
+  if (annualRate === 0) {
+    // no interest — even payments
+    return Math.round((principal / months) * 100) / 100;
   }
 
   const monthlyRate = annualRate / 12 / 100;
