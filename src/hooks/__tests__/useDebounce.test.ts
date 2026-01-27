@@ -26,4 +26,22 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('updated');
   });
+
+  it('should clean up timers on unmount', () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { rerender, unmount } = renderHook(
+      ({ value, delay }) => useDebounce(value, delay),
+      { initialProps: { value: 'initial', delay: 500 } }
+    );
+
+    rerender({ value: 'updated', delay: 500 });
+    unmount();
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
+  });
 });
