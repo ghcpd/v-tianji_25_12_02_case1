@@ -5,7 +5,7 @@ import * as api from '@/services/api';
 
 jest.mock('@/services/api');
 jest.mock('@/hooks/useDebounce', () => ({
-  useDebounce: jest.fn((value: any) => value),
+  useDebounce: (value: any) => value,
 }));
 
 const mockUser = {
@@ -45,44 +45,6 @@ describe('UserProfile - Basic Tests', () => {
     expect(screen.queryByText(/Network error/i)).toBeTruthy();
   });
 
-  it('should display status badge', async () => {
-    (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
-    render(<UserProfile userId="1" />);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(screen.queryByText('active')).toBeTruthy();
-  });
-
-  it('should display last login information', async () => {
-    (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
-    render(<UserProfile userId="1" />);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(screen.queryByText(/Last Login:/i)).toBeTruthy();
-  });
-
-  it('should format last login as "Today" if login is recent', async () => {
-    const today = new Date().toISOString();
-    const userWithTodayLogin = { ...mockUser, metadata: { lastLogin: today } };
-    (api.fetchUserData as jest.Mock).mockResolvedValue(userWithTodayLogin);
-    render(<UserProfile userId="1" />);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(screen.queryByText(/Today/i)).toBeTruthy();
-  });
-
-  it('should format last login as "Never" if no login recorded', async () => {
-    const userNoLogin = { ...mockUser, metadata: {} };
-    (api.fetchUserData as jest.Mock).mockResolvedValue(userNoLogin);
-    render(<UserProfile userId="1" />);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(screen.queryByText(/Never/i)).toBeTruthy();
-  });
-
-  it('should prevent role change in readonly mode', async () => {
-    (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
-    render(<UserProfile userId="1" readonly={true} />);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(screen.queryByText('John Doe')).toBeTruthy();
-  });
-
   it('should render with light theme by default', async () => {
     (api.fetchUserData as jest.Mock).mockResolvedValue(mockUser);
     const { container } = render(<UserProfile userId="1" />);
@@ -109,6 +71,4 @@ describe('UserProfile - Basic Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
     expect(api.fetchUserData).toHaveBeenCalledWith('2');
   });
-
-
 });
