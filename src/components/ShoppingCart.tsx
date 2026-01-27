@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Product, CartItem, DiscountCode } from '@/types';
 import { calculateDiscount, calculateTax, formatCurrency } from '@/utils/pricing';
 
@@ -7,6 +7,18 @@ interface ShoppingCartProps {
   onCheckout?: (items: CartItem[], total: number) => void;
   taxRate?: number;
   currency?: string;
+  /** Optional initial items for testing or preloaded carts */
+  initialItems?: CartItem[];
+  /** Optional hook to expose internal cart API for testing */
+  exposeApi?: (api: {
+    addToCart: (product: Product, quantity?: number) => void;
+    removeFromCart: (productId: string) => void;
+    updateQuantity: (productId: string, quantity: number) => void;
+    clearCart: () => void;
+    applyDiscountCode: () => Promise<void> | void;
+    setDiscountCode: (code: string) => void;
+    handleCheckout: () => void;
+  }) => void;
 }
 
 export const ShoppingCart: React.FC<ShoppingCartProps> = ({
@@ -14,8 +26,10 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
   onCheckout,
   taxRate = 0.1,
   currency = 'USD',
+  initialItems = [],
+  exposeApi,
 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(initialItems);
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -64,6 +78,11 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
     setDiscountCode('');
   }, []);
 
+
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }, [cartItems]);
+
   const applyDiscountCode = useCallback(async () => {
     if (!discountCode.trim()) return;
 
@@ -75,11 +94,8 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
       setAppliedDiscount(null);
       alert('Invalid discount code');
     }
-  }, [discountCode]);
+  }, [discountCode, subtotal]);
 
-  const subtotal = useMemo(() => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cartItems]);
 
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
@@ -116,6 +132,18 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
     onCheckout?.(cartItems, total);
     setShowCheckout(true);
   };
+
+  useEffect(() => {
+    exposeApi?.({
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      applyDiscountCode,
+      setDiscountCode,
+      handleCheckout,
+    });
+  }, [exposeApi, addToCart, removeFromCart, updateQuantity, clearCart, applyDiscountCode, handleCheckout]);
 
   const getItemCount = () => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
